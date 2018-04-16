@@ -1,6 +1,7 @@
 package com.coolweather.android;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -77,6 +78,8 @@ public class ChooseAreaFragment extends Fragment {
                 }else if(currentLevel == LEVEL_CITY){
                     selectedCity = cityList.get(position);
                     queryCountries();
+                }else if(currentLevel == LEVEL_COUNTRY){
+                    Toast.makeText(getContext(),"你选择了："+countryList.get(position).getCountryName(),Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -205,7 +208,7 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     private void closeProgressDialog() {
-        if (progressDialog!==null){
+        if (progressDialog!=null){
             progressDialog.dismiss();
         }
     }
