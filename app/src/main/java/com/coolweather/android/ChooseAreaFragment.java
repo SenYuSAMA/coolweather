@@ -81,10 +81,17 @@ public class ChooseAreaFragment extends Fragment {
                     queryCountries();
                 }else if(currentLevel == LEVEL_COUNTRY){
                    String weatherId = countryList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(),WeatherActiviy.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                   if(getActivity() instanceof  MainActivity) {
+                       Intent intent = new Intent(getActivity(), WeatherActiviy.class);
+                       intent.putExtra("weather_id", weatherId);
+                       startActivity(intent);
+                       getActivity().finish();
+                   }else if(getActivity() instanceof WeatherActiviy){
+                       WeatherActiviy activiy =  (WeatherActiviy)getActivity();
+                       activiy.drawerLayout.closeDrawers();
+                       activiy.swipeRefreh.setRefreshing(true);
+                       activiy.requestWeather(weatherId);
+                   }
                 }
             }
         });

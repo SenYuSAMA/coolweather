@@ -4,10 +4,14 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -54,7 +58,11 @@ public class WeatherActiviy extends AppCompatActivity {
 
     private ImageView bingPicImg;
 
+    public SwipeRefreshLayout swipeRefreh;
 
+    public DrawerLayout drawerLayout;
+
+    private Button navButton;
 
 
 
@@ -80,17 +88,36 @@ public class WeatherActiviy extends AppCompatActivity {
         carWashText = (TextView)findViewById(R.id.car_wash_text);
         sportText = (TextView)findViewById(R.id.sport_text);
         bingPicImg = (ImageView)findViewById(R.id.bing_pic_img);
+        swipeRefreh = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
+        swipeRefreh.setColorSchemeResources(R.color.colorPrimary);
+        drawerLayout=(DrawerLayout)findViewById(R.id.drawable_layout);
+        navButton = (Button)findViewById(R.id.nav_button);
+
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
+        final String weatherId;
         if(weatherString != null){
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            weatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         }else{
-            String weatherId = getIntent().getStringExtra("weather_id");
+             weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
+        swipeRefreh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(weatherId);
+            }
+        });
         String bingpic = prefs.getString("bing_pic",null);
         if(bingpic != null){
             Glide.with(this).load(bingpic).into(bingPicImg);
@@ -123,7 +150,7 @@ public class WeatherActiviy extends AppCompatActivity {
         });
     }
 
-    private void requestWeather(final String weatherId) {
+    public void requestWeather(final String weatherId) {
         loadBingPic();
         String weatherUrl = "http://guolin.tech/api/weather?cityid="+weatherId+"&key=10fd5eed9d4c41f7867c0f39990a02d0";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -134,6 +161,7 @@ public class WeatherActiviy extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActiviy.this, "获取天气信息失败，请检查网络状况", Toast.LENGTH_SHORT).show();
+                        swipeRefreh.setRefreshing(false);
                     }
                 });
             }
@@ -153,6 +181,7 @@ public class WeatherActiviy extends AppCompatActivity {
                         }else{
                             Toast.makeText(WeatherActiviy.this, "获取天气信息失败，请检查网络状况", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefreh.setRefreshing(false);
                     }
                 });
             }
